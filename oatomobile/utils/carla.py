@@ -161,6 +161,9 @@ def carla_cityscapes_image_to_ndarray(image: carla.Image) -> np.ndarray:  # pyli
   array = array[:, :, ::-1]
   return array
 
+def location_to_ndarray(l):
+    """Converts carla.Location to ndarray [x, y, z]"""
+    return np.array([l.x, l.y, l.z])
 
 def carla_lidar_measurement_to_ndarray(
     lidar_measurement: carla.LidarMeasurement,  # pylint: disable=no-member
@@ -207,8 +210,14 @@ def carla_lidar_measurement_to_ndarray(
 
   # Serialise and parse to `NumPy` tensor.
   points = np.frombuffer(lidar_measurement.raw_data, dtype=np.dtype("f4"))
-  points = np.reshape(points, (int(points.shape[0] / 3), 3))
-
+  points = np.reshape(points, (points.shape[0] // 4, 4))
+  transform_ccw = carla.Transform(
+          carla.Location(),
+          carla.Rotation(yaw=-90.))
+  matrix = np.array(transform_ccw.get_matrix())
+  points = np.dot(matrix, points.T).T
+  points = points[:, :3] \
+      + location_to_ndarray(carla.Location(z=2.5))
   # Split observations in the Z dimension (height).
   below = points[points[..., 2] <= -2.5]
   above = points[points[..., 2] >= -2.5]
