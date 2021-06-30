@@ -25,6 +25,7 @@ from absl import logging
 import carla
 import oatomobile
 from oatomobile.simulators.carla import defaults
+from oatomobile.baselines import base
 from oatomobile.utils import carla as cutil
 
 try:
@@ -81,7 +82,7 @@ class AutopilotAgent(oatomobile.Agent):
 
     # Local planner, including the PID controllers.
     dt = self._vehicle.get_world().get_settings().fixed_delta_seconds
-    lateral_control_dict = defaults.LATERAL_PID_CONTROLLER_CONFIG.copy()
+    lateral_control_dict = base.LATERAL_PID_CONTROLLER_CONFIG.copy()
     lateral_control_dict.update({"dt": dt})
     # TODO(filangel): tune the parameters for FPS != 20
     self._local_planner = LocalPlanner(
@@ -212,11 +213,9 @@ class AutopilotAgent(oatomobile.Agent):
               target_vehicle_waypoint.lane_id != ego_vehicle_waypoint.lane_id:
         continue
 
-      loc = target_vehicle.get_location()
       if is_within_distance_ahead(
-          loc,
-          ego_vehicle_location,
-          self._vehicle.get_transform().rotation.yaw,
+          target_vehicle.get_transform(),
+          self._vehicle.get_transform(),
           self._proximity_vehicle_threshold,
       ):
         return (True, target_vehicle)
@@ -252,11 +251,9 @@ class AutopilotAgent(oatomobile.Agent):
               object_waypoint.lane_id != ego_vehicle_waypoint.lane_id:
         continue
 
-      loc = traffic_light.get_location()
       if is_within_distance_ahead(
-          loc,
-          ego_vehicle_location,
-          self._vehicle.get_transform().rotation.yaw,
+          traffic_light.get_transform(),
+          self._vehicle.get_transform(),
           self._proximity_tlight_threshold,
       ):
         if traffic_light.state == carla.TrafficLightState.Red:  # pylint: disable=no-member

@@ -70,19 +70,16 @@ We have tested OATomobile on Python 3.5.
 
 1.  To install the core libraries (including [CARLA], the backend simulator):
 
+Follow instructions from [here](https://carla.readthedocs.io/en/latest/start_quickstart/#a-debian-carla-installation).
+
     ```bash
-    # The path to download CARLA 0.9.6.
-    export CARLA_ROOT=...
-    mkdir -p $CARLA_ROOT
+    # Add a line to ~/.bashrc:
+    echo 'export CARLA_ROOT=/opt/carla-simulator' >>~/.bashrc
 
-    # Downloads hosted binaries.
-    wget http://carla-assets-internal.s3.amazonaws.com/Releases/Linux/CARLA_0.9.6.tar.gz
+    # Installs CARLA Python API.
+    export PYTHONPATH=$CARLA_ROOT/PythonAPI/carla/dist/carla-0.9.11-py3.7-linux-x86_64.egg:$PYTHONPATH
 
-    # CARLA 0.9.6 installation.
-    tar -xvzf CARLA_0.9.6.tar.gz -C $CARLA_ROOT
-
-    # Installs CARLA 0.9.6 Python API.
-    easy_install $CARLA_ROOT/PythonAPI/carla/dist/carla-0.9.6-py3.5-linux-x86_64.egg
+    source ~/.bashrc
     ```
 
 1.  To install the OATomobile core API:
