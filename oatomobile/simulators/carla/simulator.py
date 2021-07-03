@@ -1659,6 +1659,13 @@ class CARLASimulator(simulator.Simulator):
     self._display = None
     self._clock = None
 
+    # CARLA setup.
+    self._client, self._world, self._frame, self._server = cutil.setup(
+        town=self._town,
+        fps=self._fps,
+        client_timeout=self._client_timeout,
+    )
+
   @property
   def hero(self) -> carla.Vehicle:  # pylint: disable=no-member
     """Returns a reference to the ego car."""
@@ -1708,14 +1715,11 @@ class CARLASimulator(simulator.Simulator):
     Returns:
       The initial observations.
     """
-    # CARLA setup.
-    self._client, self._world, self._frame, self._server = cutil.setup(
-        town=self._town,
-        fps=self._fps,
-        client_timeout=self._client_timeout,
-    )
     self._frame0 = int(self._frame)
     self._dt = self._world.get_settings().fixed_delta_seconds
+
+    if self._hero is not None:
+      self._hero.destroy()
 
     # Initializes hero agent.
     self._hero = cutil.spawn_hero(
@@ -1723,16 +1727,30 @@ class CARLASimulator(simulator.Simulator):
         spawn_point=self.spawn_point,
         vehicle_id="vehicle.tesla.model3",
     )
+
+    if self._vehicles is not None:
+      for vehicle in self._vehicles:
+        vehicle.destroy()
+
     # Initializes the other vehicles.
     self._vehicles = cutil.spawn_vehicles(
         world=self._world,
         num_vehicles=self._num_vehicles,
     )
+
+    if self._pedestrians is not None:
+      for pedestrian in self._pedestrians:
+        pedestrian.destroy()
+
     # Initializes the pedestrians.
     self._pedestrians = cutil.spawn_pedestrians(
         world=self._world,
         num_pedestrians=self._num_pedestrians,
     )
+
+    if self._sensor_suite is not None:
+      self._sensor_suite.close()
+
     # Registers the sensors.
     self._sensor_suite = simulator.SensorSuite([
         registry.get_sensor(sensor).default(
