@@ -5,8 +5,10 @@ from action_dict_to_array import ActionDictToArray
 from tqdm import tqdm
 
 # Initializes a CARLA environment.
-environment = oatomobile.envs.CARLAEnv(town="Town01")
+environment = oatomobile.envs.CARLAEnv(town="Town01",
+      sensors=["bird_view_camera_rgb"])
 environment = ActionDictToArray(environment)
+import ipdb; ipdb.set_trace()
 
 # Makes an initial observation.
 observation = environment.reset()

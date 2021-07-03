@@ -1666,6 +1666,8 @@ class CARLASimulator(simulator.Simulator):
         client_timeout=self._client_timeout,
     )
 
+    self.reset()
+
   @property
   def hero(self) -> carla.Vehicle:  # pylint: disable=no-member
     """Returns a reference to the ego car."""
