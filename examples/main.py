@@ -5,6 +5,7 @@ from action_dict_to_array import ActionDictToArray
 from jaxrl.wrappers import TakeKey
 from tqdm import tqdm
 import imageio
+import numpy as np
 
 
 # Initializes a CARLA environment.
@@ -34,6 +35,8 @@ for i in range(10):
 
     # action = agent.act(observation)
     observation, reward, done, info = environment.step(action)
+    reward = np.linalg.norm(observation['velocity'])
+    print(reward)
 
     # Renders interactive display.
     frame = environment.render(mode="rgb_array")
