@@ -23,8 +23,8 @@ SIMULATOR_FPS = 20
 # The front RGB camera configuration.
 FRONT_CAMERA_RGB_SENSOR_CONFIG = {
     "attributes": {
-        "image_size_x": "84",
-        "image_size_y": "84",
+        "image_size_x": "320",
+        "image_size_y": "180",
         "fov": "90",
     },
     "actor": {
@@ -41,8 +41,8 @@ FRONT_CAMERA_RGB_SENSOR_CONFIG = {
 # The rear RGB camera configuration.
 REAR_CAMERA_RGB_SENSOR_CONFIG = {
     "attributes": {
-        "image_size_x": "84",
-        "image_size_y": "84",
+        "image_size_x": "320",
+        "image_size_y": "180",
         "fov": "90",
     },
     "actor": {
@@ -60,8 +60,8 @@ REAR_CAMERA_RGB_SENSOR_CONFIG = {
 # The left RGB camera configuration.
 LEFT_CAMERA_RGB_SENSOR_CONFIG = {
     "attributes": {
-        "image_size_x": "84",
-        "image_size_y": "84",
+        "image_size_x": "320",
+        "image_size_y": "180",
         "fov": "90",
     },
     "actor": {
@@ -79,8 +79,8 @@ LEFT_CAMERA_RGB_SENSOR_CONFIG = {
 # The right RGB camera configuration.
 RIGHT_CAMERA_RGB_SENSOR_CONFIG = {
     "attributes": {
-        "image_size_x": "84",
-        "image_size_y": "84",
+        "image_size_x": "320",
+        "image_size_y": "180",
         "fov": "90",
     },
     "actor": {
@@ -99,8 +99,8 @@ RIGHT_CAMERA_RGB_SENSOR_CONFIG = {
 # The bird-view RGB/CityScapes camera configuration.
 BIRD_VIEW_CAMERA_RGB_SENSOR_CONFIG = {
     "attributes": {
-        "image_size_x": "84",
-        "image_size_y": "84",
+        "image_size_x": "200",
+        "image_size_y": "200",
         "fov": "90",
     },
     "actor": {
