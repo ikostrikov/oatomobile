@@ -96,8 +96,6 @@ def ndarray_to_pygame_surface(
   Returns:
     A `PyGame` surface.
   """
-  # Make sure its in 0-255 range.
-  array = 255 * (array / array.max())
   if swapaxes:
     array = array.swapaxes(0, 1)
   return pygame.surfarray.make_surface(array)
@@ -136,9 +134,6 @@ def mpl_figure_to_rgba(figure: plt.Figure) -> np.ndarray:
     # Reads figure on memory.
     image = imageio.imread("{}".format(tmp.name))
 
-  # Processes the image.
-  image = image.astype(np.float32) / 255.0
-
   return image
 
 
@@ -157,8 +152,7 @@ def lidar_2darray_to_rgb(array: np.ndarray) -> np.ndarray:
 
   # Select channel.
   img = np.c_[array, np.zeros(shape=(W, H, 1))]
-  # Convert to 8-bit image.
-  img = 255 * (img / img.max())
+
   return img
 
 
@@ -263,73 +257,14 @@ def make_dashboard(display: pygame.Surface, font: pygame.font.Font,
     display.blit(ob_right_camera_rgb_rgb, (ada_width, 0))
     ada_width = ada_width + ob_right_camera_rgb_rgb.get_width()
 
-  for overhead_features in [
-      "bird_view_camera_rgb",
-      "bird_view_camera_cityscapes",
-  ]:
-    if overhead_features in observations:
-      overhead_features_ndarray = observations.get(overhead_features)
-      # Render observation.
-      bev_meters = 25.0
-      height, width, _ = overhead_features_ndarray.shape
-      fig, ax = plt.subplots(clear=True)
-      ax.imshow(
-          overhead_features_ndarray,
-          extent=(-bev_meters, bev_meters, bev_meters, -bev_meters),
-      )
-      ncol = 0
-      if "goal" in observations:
-        goal = observations.get("goal")
-        ax.plot(
-            goal[..., 1],
-            -goal[..., 0],
-            marker="D",
-            markersize=4,
-            color="#ecb01f",
-            linestyle="None",
-            alpha=0.25,
-            label=r"$\mathcal{G}$",
-        )
-        ncol = ncol + 1
-      if "predictions" in observations:
-        predictions = observations.get("predictions")
-        if predictions is not None:
-          ax.plot(
-              predictions[..., 1],
-              -predictions[..., 0],
-              marker="x",
-              markersize=4,
-              color="#d85218",
-              alpha=0.5,
-              label="agent",
-          )
-          ncol = ncol + 1
-      if ncol > 0:
-        ax.legend(
-            ncol=ncol,
-            loc="lower center",
-            fancybox=False,
-            prop={'size': 6},
-        )
-      ax.set(
-          xlim=(-bev_meters, bev_meters),
-          ylim=(bev_meters, -bev_meters),
-          frame_on=False,
-      )
-      ax.get_xaxis().set_visible(False)
-      ax.get_yaxis().set_visible(False)
-      overhead_features_frame = mpl_figure_to_rgba(fig)[..., :3]
-      plt.close(fig)
-      overhead_features_frame = transform.resize(
-          overhead_features_frame,
-          output_shape=(height, width),
-      )
-      overhead_features_surface = ndarray_to_pygame_surface(
-          overhead_features_frame,
-          swapaxes=True,
-      )
-      display.blit(overhead_features_surface, (ada_width, 0))
-      ada_width = ada_width + overhead_features_surface.get_width()
+  if "bird_view_camera_rgb" in observations:
+    # Render left camera view.
+    ob_bird_view_camera_rgb= ndarray_to_pygame_surface(
+        array=observations.get("bird_view_camera_rgb"),
+        swapaxes=True,
+    )
+    display.blit(ob_bird_view_camera_rgb, (ada_width, 0))
+    ada_width = ada_width + ob_bird_view_camera_rgb.get_width()
 
   if "bird_view_camera_cityscapes" in observations:
     # Render bird-view camera observation.
@@ -339,48 +274,6 @@ def make_dashboard(display: pygame.Surface, font: pygame.font.Font,
     )
     display.blit(ob_bird_view_camera_cityscapes_rgb, (ada_width, 0))
     ada_width = ada_width + ob_bird_view_camera_cityscapes_rgb.get_width()
-
-  if "control" in observations:
-    # Render control bars.
-    control = observations.get("control")
-    background_rect = pygame.Rect(0, 180, 64, 20)
-    pygame.draw.rect(display, COLORS["APPLE SPACE GREY"], background_rect, 0)
-    throttle_rect = pygame.Rect(10, 190, 4, -8 * control[0])
-    pygame.draw.rect(display, COLORS["GOOGLE GREEN"], throttle_rect, 0)
-    steer_rect = pygame.Rect(30, 188, 8 * control[1], 4)
-    pygame.draw.rect(display, COLORS["GOOGLE BLUE"], steer_rect, 0)
-    break_rect = pygame.Rect(50, 190, 4, 8 * control[2])
-    pygame.draw.rect(display, COLORS["GOOGLE RED"], break_rect, 0)
-
-  # if clock is not None:
-  #   text = font.render(
-  #       "FPS={0:.1f}".format(clock.get_fps()),
-  #       True,
-  #       COLORS["WHITE"],
-  #   )
-  #   display.blit(text, (80, 180))
-
-  if "velocity" in observations:
-    text = font.render(
-        "v={0:.1f}km/h".format(3.6 * np.linalg.norm(observations["velocity"])),
-        True,
-        COLORS["WHITE"],
-    )
-    display.blit(text, (200, 180))
-
-  if "acceleration" in observations:
-    text = font.render(
-        "v={0:.1f}m/s^2".format(np.linalg.norm(observations["acceleration"])),
-        True,
-        COLORS["WHITE"],
-    )
-    display.blit(text, (300, 180))
-
-  if "is_at_traffic_light" in observations and "traffic_light_state" in observations:
-    if observations["is_at_traffic_light"] == 1 and observations[
-        "traffic_light_state"] == 0:
-      pygame.draw.circle(display, COLORS["GOOGLE RED"], (80, 190), 7)
-
 
 def draw_settings(
     carla_map: carla.Map,  # pylint: disable=no-member

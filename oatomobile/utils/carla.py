@@ -137,7 +137,6 @@ def carla_rgb_image_to_ndarray(image: carla.Image) -> np.ndarray:  # pylint: dis
   """
   image.convert(carla.ColorConverter.Raw)  # pylint: disable=no-member
   array = np.frombuffer(image.raw_data, dtype=np.dtype("uint8"))
-  array = array.astype(np.float32) / 255
   array = np.reshape(array, (image.height, image.width, 4))
   array = array[:, :, :3]
   array = array[:, :, ::-1]
@@ -155,7 +154,6 @@ def carla_cityscapes_image_to_ndarray(image: carla.Image) -> np.ndarray:  # pyli
   """
   image.convert(carla.ColorConverter.CityScapesPalette)  # pylint: disable=no-member
   array = np.frombuffer(image.raw_data, dtype=np.dtype("uint8"))
-  array = array.astype(np.float32) / 255
   array = np.reshape(array, (image.height, image.width, 4))
   array = array[:, :, :3]
   array = array[:, :, ::-1]
@@ -239,7 +237,9 @@ def carla_lidar_measurement_to_ndarray(
       ))
   features = np.stack(features, axis=-1)
 
-  return features.astype(np.float32)
+  features *= 255
+
+  return features.astype(np.uint8)
 
 
 def spawn_hero(

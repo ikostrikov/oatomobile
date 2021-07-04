@@ -93,14 +93,14 @@ class CameraSensor(simulator.Sensor, abc.ABC):
   def observation_space(self, *args: Any, **kwargs: Any) -> gym.spaces.Box:
     """Returns the observation spec of the sensor."""
     return gym.spaces.Box(
-        low=0.0,
-        high=1.0,
+        low=0,
+        high=255,
         shape=(
             int(self.config["attributes"].get("image_size_y")),
             int(self.config["attributes"].get("image_size_x")),
             3,
         ),
-        dtype=np.float32,
+        dtype=np.uint8,
     )
 
   def close(self) -> None:
@@ -372,10 +372,10 @@ class LIDARSensor(simulator.Sensor):
   def observation_space(self, *args: Any, **kwargs: Any) -> gym.spaces.Box:
     """Returns the observation spec of the sensor."""
     return gym.spaces.Box(
-        low=0.0,
-        high=1.0,
+        low=0,
+        high=255,
         shape=(200, 200, 2),
-        dtype=np.float32,
+        dtype=np.uint8,
     )
 
   @staticmethod

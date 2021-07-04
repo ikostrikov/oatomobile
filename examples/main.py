@@ -37,7 +37,6 @@ for i in range(10):
 
     # Renders interactive display.
     frame = environment.render(mode="rgb_array")
-    import ipdb; ipdb.set_trace()
     frames.append(frame)
 
   imageio.mimsave(f'videos/{i}.mp4', frames, fps=20)
