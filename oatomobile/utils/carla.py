@@ -78,21 +78,21 @@ def setup(
     port = np.random.randint(2000, 3000)
 
     # Start CARLA server.
-    env = os.environ.copy()
-    env["SDL_VIDEODRIVER"] = "offscreen"
-    env["SDL_HINT_CUDA_DEVICE"] = "0"
     logging.debug("Inits a CARLA server at port={}".format(port))
     server = subprocess.Popen(
         [
             os.path.join(os.environ.get("CARLA_ROOT"), "CarlaUE4.sh"),
             "-carla-rpc-port={}".format(port),
-            '-opengl',
+            "-carla-server",
+            "-ResX=800",
+            "-ResY=600",
+            "-vulkan",
+            "-RenderOffscreen",
             "-quality-level=Epic",
         ],
         stdout=None,
         stderr=subprocess.STDOUT,
-        preexec_fn=os.setsid,
-        env=env,
+        preexec_fn=os.setsid
     )
     atexit.register(os.killpg, server.pid, signal.SIGKILL)
     time.sleep(server_timestop)

@@ -68,16 +68,21 @@ action = agent.act(observation)
 
 We have tested OATomobile on Python 3.5.
 
-1.  To install the core libraries (including [CARLA], the backend simulator):
-
-Follow instructions from [here](https://carla.readthedocs.io/en/latest/start_quickstart/#a-debian-carla-installation).
+1.  Follow:
 
     ```bash
-    # Add a line to ~/.bashrc:
-    echo 'export CARLA_ROOT=/opt/carla-simulator' >>~/.bashrc
+    echo 'export CARLA_ROOT=$HOME/Carla_Latest/' >>~/.bashrc
+    source ~/.bashrc
+
+    mkdir $HOME/Carla_Latest/
+
+    wget https://carla-releases.s3.eu-west-3.amazonaws.com/Linux/Dev/CARLA_Latest.tar.gz
+
+    tar xvf CARLA_Latest.tar.gz
+    rm CARLA_Latest.tar.gz
 
     # Installs CARLA Python API.
-    export PYTHONPATH=$CARLA_ROOT/PythonAPI/carla/dist/carla-0.9.11-py3.7-linux-x86_64.egg:$PYTHONPATH
+    echo 'export PYTHONPATH=$CARLA_ROOT/PythonAPI/carla/dist/carla-0.9.11-py3.7-linux-x86_64.egg:$PYTHONPATH' >>~/.bashrc
 
     source ~/.bashrc
     ```
