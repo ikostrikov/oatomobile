@@ -78,10 +78,11 @@ def main(_):
         env = jaxrl.wrappers.EpisodeMonitor(env)
         return env
 
-    env = make_pixel_env(FLAGS.seed)
-    eval_env = make_pixel_env(FLAGS.seed + 42)
     video_eval_folder = os.path.join(FLAGS.save_dir, 'video', 'eval')
-    eval_env = VideoRecorder(eval_env, save_folder=video_eval_folder)
+    env = make_pixel_env(FLAGS.seed)
+    env = VideoRecorder(env, save_folder=video_eval_folder)
+    # eval_env = make_pixel_env(FLAGS.seed + 42)
+    # eval_env = VideoRecorder(eval_env, save_folder=video_eval_folder)
 
     np.random.seed(FLAGS.seed)
     random.seed(FLAGS.seed)
@@ -133,6 +134,7 @@ def main(_):
                     summary_writer.add_scalar(f'training/{k}', v, i)
                 summary_writer.flush()
 
+        """
         if i % FLAGS.eval_interval == 0:
             eval_stats = evaluate(agent, eval_env, FLAGS.eval_episodes)
 
@@ -146,6 +148,7 @@ def main(_):
             np.savetxt(os.path.join(FLAGS.save_dir, f'{FLAGS.seed}.txt'),
                        eval_returns,
                        fmt=['%d', '%.1f'])
+        """
 
 if __name__ == '__main__':
     app.run(main)
