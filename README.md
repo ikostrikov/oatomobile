@@ -86,21 +86,12 @@ We have tested OATomobile on Python 3.5.
     echo 'export PYTHONPATH=$CARLA_ROOT/PythonAPI/carla/dist/carla-0.9.11-py3.7-linux-x86_64.egg:$PYTHONPATH' >>~/.bashrc
 
     source ~/.bashrc
-    ```
-
-1.  To install the OATomobile core API:
-
-    ```bash
-    pip install --upgrade pip setuptools
-    pip install oatomobile
-    ```
-
-1.  To install dependencies for our [PyTorch]- or [TensorFlow]-based agents:
-
-    ```bash
-    pip install oatomobile[torch]
-    # and/or
-    pip install oatomobile[tf]
+    
+    mkdir -p ~/GitHub/
+    cd ~/GitHub/
+    git clone git@github.com:ikostrikov/oatomobile.git
+    cd oatomobile
+    pip install -e .
     ```
 
 ## Citing OATomobile
