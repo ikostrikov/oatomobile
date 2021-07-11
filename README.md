@@ -66,10 +66,6 @@ action = agent.act(observation)
 
 ## Installation
 
-We have tested OATomobile on Python 3.5.
-
-1.  Follow:
-
     ```bash
     echo 'export CARLA_ROOT=$HOME/Carla_Latest/' >>~/.bashrc
     source ~/.bashrc
