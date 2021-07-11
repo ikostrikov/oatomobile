@@ -74,8 +74,9 @@ We have tested OATomobile on Python 3.5.
     echo 'export CARLA_ROOT=$HOME/Carla_Latest/' >>~/.bashrc
     source ~/.bashrc
 
-    mkdir $HOME/Carla_Latest/
-
+    mkdir $CARLA_ROOT
+    cd $CARLA_ROOT
+    
     wget https://carla-releases.s3.eu-west-3.amazonaws.com/Linux/Dev/CARLA_Latest.tar.gz
 
     tar xvf CARLA_Latest.tar.gz
