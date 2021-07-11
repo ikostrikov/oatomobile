@@ -66,29 +66,29 @@ action = agent.act(observation)
 
 ## Installation
 
-    ```bash
-    echo 'export CARLA_ROOT=$HOME/Carla_Latest/' >>~/.bashrc
-    source ~/.bashrc
+```bash
+echo 'export CARLA_ROOT=$HOME/Carla_Latest/' >>~/.bashrc
+source ~/.bashrc
 
-    mkdir $CARLA_ROOT
-    cd $CARLA_ROOT
-    
-    wget https://carla-releases.s3.eu-west-3.amazonaws.com/Linux/Dev/CARLA_Latest.tar.gz
+mkdir $CARLA_ROOT
+cd $CARLA_ROOT
 
-    tar xvf CARLA_Latest.tar.gz
-    rm CARLA_Latest.tar.gz
+wget https://carla-releases.s3.eu-west-3.amazonaws.com/Linux/Dev/CARLA_Latest.tar.gz
 
-    # Installs CARLA Python API.
-    echo 'export PYTHONPATH=$CARLA_ROOT/PythonAPI/carla/dist/carla-0.9.11-py3.7-linux-x86_64.egg:$PYTHONPATH' >>~/.bashrc
+tar xvf CARLA_Latest.tar.gz
+rm CARLA_Latest.tar.gz
 
-    source ~/.bashrc
-    
-    mkdir -p ~/GitHub/
-    cd ~/GitHub/
-    git clone git@github.com:ikostrikov/oatomobile.git
-    cd oatomobile
-    pip install -e .
-    ```
+# Installs CARLA Python API.
+echo 'export PYTHONPATH=$CARLA_ROOT/PythonAPI/carla/dist/carla-0.9.11-py3.7-linux-x86_64.egg:$PYTHONPATH' >>~/.bashrc
+
+source ~/.bashrc
+
+mkdir -p ~/GitHub/
+cd ~/GitHub/
+git clone git@github.com:ikostrikov/oatomobile.git
+cd oatomobile
+pip install -e .
+```
 
 ## Citing OATomobile
 
