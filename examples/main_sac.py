@@ -1,26 +1,23 @@
-import oatomobile
-import oatomobile.envs
-import oatomobile.baselines.rulebased
-from action_dict_to_array import ActionDictToArray
-from jaxrl.wrappers import TakeKey
-from tqdm import tqdm
-
-
-import gym
 import os
 import random
 
+import gym
+import jaxrl.wrappers
 import numpy as np
+import oatomobile
+import oatomobile.envs
+import oatomobile.baselines.rulebased
 import tqdm
 from absl import app, flags
-from ml_collections import config_flags
-from tensorboardX import SummaryWriter
-
 from jaxrl.agents import DrQLearner
 from jaxrl.datasets import ReplayBuffer
 from jaxrl.evaluation import evaluate
-import jaxrl.wrappers
-from jaxrl.wrappers import VideoRecorder
+from jaxrl.wrappers import TakeKey, VideoRecorder
+from ml_collections import config_flags
+from tensorboardX import SummaryWriter
+from tqdm import tqdm
+
+from action_dict_to_array import ActionDictToArray
 
 FLAGS = flags.FLAGS
 
@@ -35,9 +32,7 @@ flags.DEFINE_integer('batch_size', 512, 'Mini batch size.')
 flags.DEFINE_integer('max_steps', int(5e5), 'Number of environment steps.')
 flags.DEFINE_integer('start_training', int(1e3),
                      'Number of environment steps to start training.')
-flags.DEFINE_integer(
-    'action_repeat', 1,
-    'Action repeat.')
+flags.DEFINE_integer('action_repeat', 1, 'Action repeat.')
 flags.DEFINE_boolean('tqdm', True, 'Use tqdm progress bar.')
 flags.DEFINE_boolean('save_video', False, 'Save videos during evaluation.')
 config_flags.DEFINE_config_file(
@@ -54,11 +49,29 @@ class VelocityReward(gym.Wrapper):
         return observation, reward, done, info
 
 
-class AllGasNoBrakes(gym.ActionWrapper):
+class AccelerationControl(gym.ActionWrapper):
+    def __init__(self, env, max_throttle=0.75, max_brake=0.3):
+        super().__init__(env)
+        self.max_throttle = max_throttle
+        self.max_brake = max_brake
+        spaces = self.env.action_space.spaces.copy()
+        spaces.pop('brake')
+        spaces.pop('throttle')
+        self.action_space = gym.spaces.Dict({
+            **spaces, 'acceleration':
+            gym.spaces.Box(low=-1.0, high=1.0, shape=(), dtype=np.float32)
+        })
+
     def action(self, action):
         new_action = action.copy()
-        new_action[0] = -1.0
-        new_action[2] = 1.0
+        acceleration = new_action.pop('acceleration')
+        if acceleration >= 0.0:
+            new_action['throttle'] = min(acceleration, self.max_throttle)
+            new_action['brake'] = 0.0
+        else:
+            new_action['throttle'] = 0.0
+            new_action['brake'] = min(abs(acceleration), self.max_brake)
+
         return new_action
 
 
@@ -67,10 +80,11 @@ def main(_):
         os.path.join(FLAGS.save_dir, 'tb', str(FLAGS.seed)))
 
     def make_pixel_env(seed):
-        env = oatomobile.envs.CARLAEnv(town="Town01", sensors=['front_camera_rgb', 'velocity'])
+        env = oatomobile.envs.CARLAEnv(
+            town="Town01", sensors=['front_camera_rgb', 'velocity'])
+        env = AccelerationControl(env)
         env = ActionDictToArray(env)
         env = gym.wrappers.RescaleAction(env, -1.0, 1.0)
-        env = AllGasNoBrakes(env)
         env = TakeKey(env, 'front_camera_rgb')
         env = VelocityReward(env)
         env = jaxrl.wrappers.FrameStack(env, 3)
@@ -100,14 +114,14 @@ def main(_):
 
     eval_returns = []
     observation, done = env.reset(), False
-    for i in tqdm.tqdm(range(1, (FLAGS.max_steps + 1) // FLAGS.action_repeat),
-                       smoothing=0.1,
-                       disable=not FLAGS.tqdm):
+    for i in tqdm(range(1, (FLAGS.max_steps + 1) // FLAGS.action_repeat),
+                  smoothing=0.1,
+                  disable=not FLAGS.tqdm):
         if i < FLAGS.start_training:
             action = env.action_space.sample()
         else:
             action = agent.sample_actions(observation)
-  
+
         next_observation, reward, done, info = env.step(action)
 
         if not done or 'TimeLimit.truncated' in info:
@@ -133,7 +147,6 @@ def main(_):
                 for k, v in update_info.items():
                     summary_writer.add_scalar(f'training/{k}', v, i)
                 summary_writer.flush()
-
         """
         if i % FLAGS.eval_interval == 0:
             eval_stats = evaluate(agent, eval_env, FLAGS.eval_episodes)
@@ -149,6 +162,7 @@ def main(_):
                        eval_returns,
                        fmt=['%d', '%.1f'])
         """
+
 
 if __name__ == '__main__':
     app.run(main)
