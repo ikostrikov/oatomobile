@@ -1,14 +1,16 @@
 import os
 import random
 
+import carla
 import gym
 import jaxrl.wrappers
 import numpy as np
 import oatomobile
-import oatomobile.envs
 import oatomobile.baselines.rulebased
+import oatomobile.envs
 import tqdm
 from absl import app, flags
+from agents.navigation.controller import PIDLongitudinalController
 from jaxrl.agents import DrQLearner
 from jaxrl.datasets import ReplayBuffer
 from jaxrl.evaluation import evaluate
@@ -75,6 +77,56 @@ class AccelerationControl(gym.ActionWrapper):
         return new_action
 
 
+class VelocityControl(gym.ActionWrapper):
+    def __init__(self, env, max_velocity=200.0):
+        super().__init__(env)
+
+        spaces = self.env.action_space.spaces.copy()
+        spaces.pop('acceleration')
+        self.action_space = gym.spaces.Dict({
+            **spaces, 'target_velocity':
+            gym.spaces.Box(low=0.0,
+                           high=max_velocity,
+                           shape=(),
+                           dtype=np.float32)
+        })
+
+        # Unwrap to reach the sim.
+        sim = self.env
+        while True:
+            if hasattr(sim, '_sim'):
+                sim = sim._sim
+                break
+            else:
+                sim = sim.env
+        self.sim = sim
+        self._reset_controller()
+
+    def reset(self, *args, **kwargs):
+        obs = self.env.reset(*args, **kwargs)
+        self._reset_controller()
+        return obs
+
+    def _reset_controller(self):
+        self._dt = 1.0 / 20.0
+
+        args_longitudinal_dict = {
+            'K_P': 1.0,
+            'K_D': 0,
+            'K_I': 1,
+            'dt': self._dt
+        }
+
+        self._lon_controller = PIDLongitudinalController(
+            self.sim.hero, **args_longitudinal_dict)
+
+    def action(self, action):
+        new_action = action.copy()
+        target_velocity = new_action.pop('target_velocity')
+        acceleration = self._lon_controller.run_step(target_velocity)
+        return {**new_action, 'acceleration': acceleration}
+
+
 def main(_):
     summary_writer = SummaryWriter(
         os.path.join(FLAGS.save_dir, 'tb', str(FLAGS.seed)))
@@ -83,6 +135,7 @@ def main(_):
         env = oatomobile.envs.CARLAEnv(
             town="Town01", sensors=['front_camera_rgb', 'velocity'])
         env = AccelerationControl(env)
+        # env = VelocityControl(env)
         env = ActionDictToArray(env)
         env = gym.wrappers.RescaleAction(env, -1.0, 1.0)
         env = TakeKey(env, 'front_camera_rgb')
